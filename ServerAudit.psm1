@@ -1,11 +1,17 @@
 # ServerAudit.psm1
 
 function DHCPCredentials {
-    $DHCPCredentials = Get-DhcpServerDnsCredential -ErrorAction silentlycontinue
-    if ($DHCPCredentials) {
-        $Credentials = @{DomainName = $DHCPCredentials.DomainName; UserName = $DHCPCredentials.UserName }
-        return $Credentials
-    } else {
+    try {
+        $DHCPCredentials = Get-DhcpServerDnsCredential -ErrorAction silentlycontinue
+        if ($DHCPCredentials) {
+            $Credentials = @{DomainName = $DHCPCredentials.DomainName; UserName = $DHCPCredentials.UserName }
+            return $Credentials
+        }
+        else {
+            return 'N/A'
+        }
+    }
+    catch {
         return 'N/A'
     }
 }
