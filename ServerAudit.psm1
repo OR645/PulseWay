@@ -4,8 +4,8 @@ function DHCPCredentials {
     try {
         $DHCPCredentials = Get-DhcpServerDnsCredential -ErrorAction silentlycontinue
         if ($DHCPCredentials) {
-            $Credentials = @{DomainName = $DHCPCredentials.DomainName; UserName = $DHCPCredentials.UserName }
-            return $Credentials
+            $Credentials = [PSCustomObject]@{DomainName = $DHCPCredentials.DomainName; UserName = $DHCPCredentials.UserName }
+            return "$($Credentials.DomainName)\$($Credentials.UserName)"
         }
         else {
             return 'N/A'
@@ -14,8 +14,8 @@ function DHCPCredentials {
     catch {
         return 'N/A'
     }
-}
 
+}
 function ShadowCopy {
     $volumes = @{}
     $allvolumes = Get-CimInstance win32_volume -ComputerName $env:COMPUTERNAME -Property DeviceID, Name
@@ -43,7 +43,8 @@ function StaticIP {
     
     if ($DHCP.Dhcp -eq "Disabled") {
         $IsStatic = $true
-    } else {
+    }
+    else {
         $IsStatic = $false
     }
 
@@ -83,7 +84,8 @@ function EventLog_System {
 
     if ($ID) {
         $ID
-    } else {
+    }
+    else {
         return 'N/A'
     }
 }
@@ -97,7 +99,8 @@ function EventLog_Security {
 
     if ($ID) {
         return $ID
-    } else {
+    }
+    else {
         return 'N/A'
     }
 }
@@ -111,7 +114,8 @@ function ReplicationLog {
 
     if ($ID) {
         $ID
-    } else {
+    }
+    else {
         return 'N/A'
     }
 }
@@ -120,7 +124,8 @@ function UPS {
     $UpsDevice = get-pnpDevice -FriendlyName *battery*
     if ($UpsDevice.Status -match 'OK') {
         return $true
-    } else {
+    }
+    else {
         return $false
     }
 }
@@ -153,6 +158,12 @@ function Get-MachineType {
                     Break
                 }
 
+                "VMware, Inc." {
+                    $Platform = "VMware"
+                    $VM = $true
+                    Break
+                }
+
                 "QEMU" {
                     $Platform = "KVM"
                     $VM = $true
@@ -178,7 +189,8 @@ function Get-MachineType {
                     if ((((Get-CimInstance -query "select uuid from Win32_ComputerSystemProduct" | Select-Object UUID).UUID).substring(0, 3) ) -match "EC2") {
                         $Platform = "AWS"
                         $VM = $true
-                    } else {
+                    }
+                    else {
                         $Platform = "Physical"
                         $VM = $false
                     }
