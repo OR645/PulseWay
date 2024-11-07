@@ -2,10 +2,9 @@
 
 function DHCPCredentials {
     try {
-        $DHCPCredentials = Get-DhcpServerDnsCredential -ErrorAction silentlycontinue
-        if ($DHCPCredentials) {
-            $Credentials = [PSCustomObject]@{DomainName = $DHCPCredentials.DomainName; UserName = $DHCPCredentials.UserName }
-            return "$($Credentials.DomainName)\$($Credentials.UserName)"
+        $DHCPCredentials = Get-DhcpServerDnsCredential -ErrorAction SilentlyContinue
+        if ($DHCPCredentials.UserName) {
+            return "$($DHCPCredentials.DomainName)\$($DHCPCredentials.UserName)"
         }
         else {
             return 'N/A'
@@ -14,8 +13,8 @@ function DHCPCredentials {
     catch {
         return 'N/A'
     }
-
 }
+
 function ShadowCopy {
     $volumes = @{}
     $allvolumes = Get-CimInstance win32_volume -ComputerName $env:COMPUTERNAME -Property DeviceID, Name
