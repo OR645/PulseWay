@@ -57,21 +57,25 @@ function StaticIP {
 }
 
 function DuplicatesDNS {
-    $Zone = Get-DnsServerResourceRecord -ZoneName $Env:USERDNSDOMAIN -RRType A
+    $Zone = try { Get-DnsServerResourceRecord -ZoneName $Env:USERDNSDOMAIN -RRType A } catch { $false }
+    if ($Zone -ne $false) {
 
-    $DNSTable = foreach ($Record in $Zone) {
-        [pscustomobject]@{
-            Hostname  = $Record.hostname
-            Timestamp = $Record.Timestamp
-            IPAddress = $([system.version]($Record.RecordData.ipv4address.IPAddressToString))
+        $DNSTable = foreach ($Record in $Zone) {
+            [pscustomobject]@{
+                Hostname  = $Record.hostname
+                Timestamp = $Record.Timestamp
+                IPAddress = $([system.version]($Record.RecordData.ipv4address.IPAddressToString))
+            }    
+        }
+    
+        $Duplicates = @()
+        $DNSUnique = $DNSTable | Sort-Object Timestamp | Sort-Object -Unique IPAddress
+        foreach ($ip in $DNSTable) {
+            if ($ip.Hostname -notin $DNSUnique.Hostname -and $ip.IPAddress -notin (Get-NetIPAddress -AddressFamily IPv4 | Select-Object -ExpandProperty IPAddress)) { $Duplicates += $ip }
         }
     }
-    
-    $DNSTable | Sort-Object Timestamp | Sort-Object -Unique IPAddress
-    $Duplicates = foreach ($ip in $DNSTable) {
-        if ($ip.Hostname -notin $IPAddress.Hostname) { $ip }
-    }
-    return $Duplicates
+
+    return $(if ($Duplicates.count -gt 0) {$true} else {$false})
 }
 
 function EventLog_System {
