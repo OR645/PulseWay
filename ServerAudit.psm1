@@ -210,7 +210,7 @@ function HyperV {
     $VMHost = $false
     $HasSnapshots = $false
     $SnapshotList = @()
-    $enable = ""
+    $enable = @()
 
     if ($VMS) {
         $VMHost = $true
@@ -228,15 +228,14 @@ function HyperV {
                     $Check += 1
                 }
 
-                $IntegrationServices = Get-VMIntegrationService -VMName $VM.Name
-                $enabledServices = $IntegrationServices | Where-Object { $_.Enabled -eq $true } | Select-Object -ExpandProperty Name
-                $enable += [string]::Join(", ", $enabledServices) + "`n"
+                $IntegrationServices = (Get-VMIntegrationService -VMName $VM.Name | Select-Object -ExpandProperty Enabled) -notcontains $false
+                $enable += $IntegrationServices
             }
             catch {}
         }
 
         $HasSnapshots = $Check -ge 1
-        $enable = $enable.TrimEnd("`n")
+        $enable = $enable -notcontains $false
     }
 
     $result = @{
