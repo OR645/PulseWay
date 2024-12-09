@@ -238,14 +238,14 @@ function HyperV {
         $enable = $enable -notcontains $false
     }
 
-    $result = @{
-        "VM Host"              = $VMHost.ToString()
-        "Has Snapshots"        = $HasSnapshots.ToString()
+    $result = [PSCustomObject]@{
+        "VM Host"              = $VMHost
+        "Has Snapshots"        = $HasSnapshots
         "Snapshots"            = $SnapshotList
         "Integration Services" = $enable
     }
 
-    return $result | ConvertTo-Json | ConvertFrom-Json
+    return $result
 }
 
 function EsetAgent {
